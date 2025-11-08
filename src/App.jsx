@@ -1,8 +1,13 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-// 完整 24 题 — 顺序答题版（环节动物为主，混合其他门类作干扰，全部文字题）
-// 使用方法：将本文件保存为 src/App.jsx（Create React App）或 pages/index.jsx（Next.js）
-// 部署：本地测试无误后推送到 GitHub，vercel.com 导入仓库一键部署。
+/**
+ * src/App.jsx
+ * 环节动物测试 — 顺序答题（24 题） — 蓝紫霓虹未来风
+ * 说明：
+ * - 直接复制到 Create React App 的 src/App.jsx
+ * - 无需 Tailwind（样式内置在组件里）
+ * - 部署到 Vercel：push to GitHub -> vercel.com import -> deploy
+ */
 
 function shuffle(array) {
   const a = array.slice();
@@ -13,7 +18,11 @@ function shuffle(array) {
   return a;
 }
 
-export default function AnnelidSequentialQuizFull() {
+export default function App() {
+  useEffect(() => {
+    document.title = "环节动物测试";
+  }, []);
+
   const baseQuestions = useMemo(
     () => [
       { id: 1, category: "分节", q: "下列关于“同律分节”的描述哪项最准确？", options: ["A. 各体节形态和功能基本相似", "B. 各体节高度分化为不同器官", "C. 只存在于节肢动物", "D. 指的是胚胎期分节"], ans: "A", exp: "同律分节指体节间在外形与功能上高度重复，这在许多环节动物中可见。" },
@@ -46,17 +55,15 @@ export default function AnnelidSequentialQuizFull() {
     []
   );
 
-  // 随机题序
   const [questions] = useState(() => shuffle(baseQuestions));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({}); // { id: 'A' }
-  const [revealed, setRevealed] = useState({}); // { id: true }
+  const [answers, setAnswers] = useState({});
+  const [revealed, setRevealed] = useState({});
   const [finished, setFinished] = useState(false);
 
   const current = questions[currentIndex];
 
   const handleAnswer = (id, choice) => {
-    // 如果当前题已揭示则不再处理（按钮通常已禁用）
     if (revealed[id]) return;
     setAnswers((s) => ({ ...s, [id]: choice }));
     setRevealed((r) => ({ ...r, [id]: true }));
@@ -65,6 +72,8 @@ export default function AnnelidSequentialQuizFull() {
   const next = () => {
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((i) => i + 1);
+      // scroll to top (optional)
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       setFinished(true);
     }
@@ -84,124 +93,275 @@ export default function AnnelidSequentialQuizFull() {
   });
 
   const restart = () => {
-    window.location.reload(); // 简洁方式重新随机化并复位
+    window.location.reload();
   };
 
-  // 完成页面
+  // inline styles & neon gradients
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      background:
+        "radial-gradient(ellipse at 10% 10%, rgba(89, 55, 170,0.18), transparent 10%), radial-gradient(ellipse at 90% 90%, rgba(90, 120, 255,0.12), transparent 10%), linear-gradient(180deg,#0b0426 0%, #140a36 40%, #26104f 100%)",
+      color: "#e6e9f2",
+      padding: "32px 20px",
+      fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
+    },
+    card: {
+      maxWidth: 920,
+      margin: "0 auto",
+      background: "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02))",
+      borderRadius: 16,
+      boxShadow: "0 10px 30px rgba(8,6,20,0.6), inset 0 1px 0 rgba(255,255,255,0.02)",
+      padding: 22,
+      border: "1px solid rgba(255,255,255,0.04)",
+    },
+    neonTitle: {
+      fontSize: 20,
+      fontWeight: 800,
+      letterSpacing: 0.6,
+      color: "white",
+      textShadow:
+        "0 0 8px rgba(136, 77, 255, 0.9), 0 0 18px rgba(64, 155, 255, 0.45), 0 6px 30px rgba(0,0,0,0.6)",
+    },
+    subtitle: { color: "#aeb5db", fontSize: 13, marginTop: 6 },
+    centerBox: { display: "flex", flexDirection: "column", alignItems: "center" },
+    questionCard: {
+      width: "100%",
+      maxWidth: 780,
+      background: "linear-gradient(180deg, rgba(10,8,30,0.5), rgba(14,9,40,0.6))",
+      borderRadius: 12,
+      padding: 20,
+      marginTop: 14,
+      border: "1px solid rgba(128, 90, 255, 0.12)",
+    },
+    questionText: {
+      textAlign: "center",
+      fontSize: 18,
+      fontWeight: 600,
+      marginBottom: 14,
+      color: "#eaf0ff",
+    },
+    optionBtn: {
+      display: "block",
+      width: "100%",
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid rgba(255,255,255,0.06)",
+      background: "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
+      color: "#eaf0ff",
+      textAlign: "left",
+      cursor: "pointer",
+      fontWeight: 600,
+      transition: "all 180ms ease",
+      boxShadow: "0 4px 14px rgba(70,20,150,0.06)",
+    },
+    optionGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
+    progressWrap: {
+      height: 10,
+      background: "rgba(255,255,255,0.04)",
+      borderRadius: 999,
+      overflow: "hidden",
+      marginTop: 12,
+    },
+    progressInner: (pct) => ({
+      height: "100%",
+      width: `${pct}%`,
+      transition: "width 450ms cubic-bezier(.2,.9,.2,1)",
+      background: "linear-gradient(90deg,#7a42ff,#2be6ff,#7a42ff)",
+      boxShadow: "0 6px 24px rgba(70,20,150,0.18)",
+    }),
+    neonSmall: { color: "#cbd6ff", fontSize: 12 },
+    cardFooter: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 },
+  };
+
+  // render finished
   if (finished) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-6">
-        <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl p-6">
-          <h1 className="text-2xl font-bold mb-4 text-center">成绩总结</h1>
-          <p className="text-center text-lg mb-4">
-            你共答对 <strong>{correctCount}</strong> / {total} 题 （{Math.round((correctCount / total) * 100)}%）
-          </p>
-
-          <section className="space-y-4">
-            {stats.map((s) => (
-              <div key={s.category}>
-                <div className="flex justify-between text-sm mb-1">
-                  <div>{s.category} · 已答 {s.attempted}/{s.total} · 正确 {s.correct}</div>
-                  <div>{s.pct}%</div>
-                </div>
-                <div className="w-full bg-slate-100 h-3 rounded overflow-hidden">
-                  <div style={{ width: `${s.pct}%` }} className="h-3 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <div className="mt-6 flex gap-3 justify-center">
-            <button onClick={restart} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">再测一次</button>
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={styles.neonTitle}>环节动物测试</div>
+              <div style={styles.subtitle}>完成测验 · 成绩总结</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 13, color: "#cbd6ff" }}>题目已完成</div>
+              <div style={{ fontWeight: 700, marginTop: 6, fontSize: 18 }}>{correctCount} / {total} （{Math.round((correctCount / total) * 100)}%）</div>
+            </div>
           </div>
 
-          <footer className="mt-6 text-xs text-slate-500 border-t pt-3">
-            <div className="mb-1">Vercel 部署简要步骤：</div>
-            <ol className="list-decimal list-inside space-y-1 text-xs">
-              <li>用 Create React App 或 Next.js 创建项目，将本文件保存为 <code>src/App.jsx</code> 或 <code>pages/index.jsx</code>。</li>
-              <li>本地运行：<code>npm run start</code>（CRA）或 <code>npm run dev</code>（Next）。</li>
-              <li>推送到 GitHub 后，在 <strong>vercel.com</strong> 导入仓库并部署，Vercel 会自动构建与发布。</li>
-              <li>若使用 CRA，构建命令为 <code>npm run build</code>，输出目录为 <code>build</code>。</li>
-            </ol>
-          </footer>
+          <div style={{ marginTop: 18 }}>
+            <div style={{ color: "#dfe7ff", fontWeight: 700, marginBottom: 10 }}>按知识点掌握率</div>
+            <div style={{ display: "grid", gap: 12 }}>
+              {stats.map((s) => (
+                <div key={s.category} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: "#c9d4ff", fontSize: 13 }}>
+                    <div>{s.category} · 已答 {s.attempted}/{s.total}</div>
+                    <div>{s.pct}%</div>
+                  </div>
+                  <div style={{ width: "100%", height: 12, borderRadius: 8, background: "rgba(255,255,255,0.04)", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
+                      width: `${s.pct}%`,
+                      background: `linear-gradient(90deg, rgba(114, 41, 255, 1), rgba(2, 205, 255, 1))`,
+                      boxShadow: "0 6px 18px rgba(60, 20, 140, 0.24)"
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 20, display: "flex", justifyContent: "center", gap: 12 }}>
+            <button onClick={restart} style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+              background: "linear-gradient(90deg,#5b2cff,#00d1ff)",
+              color: "#0b0720",
+              boxShadow: "0 10px 30px rgba(90,30,200,0.18)"
+            }}>再测一次</button>
+          </div>
+
+          <div style={{ marginTop: 18, borderTop: "1px dashed rgba(255,255,255,0.04)", paddingTop: 12, color: "#aeb5db", fontSize: 12 }}>
+            Vercel 部署说明：在项目根目录初始化 Git 仓库并推到 GitHub，登录 vercel.com -> Import Project -> 选择仓库 -> Deploy 即可。若使用 CRA，构建命令为 <code>npm run build</code>，输出目录为 <code>build</code>。
+          </div>
         </div>
       </div>
     );
   }
 
-  // 当前题展示
+  // current progress pct
+  const progressPct = Math.round(((currentIndex) / total) * 100);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl p-6">
-        <header className="flex items-center justify-between mb-4">
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 className="text-xl font-bold">环节动物混合选择题（顺序答题 · 24题）</h1>
-            <p className="text-sm text-slate-600">每题答完立即显示解析，答题顺序随机化。</p>
-          </div>
-          <div className="text-sm text-slate-500">第 {currentIndex + 1} / {total} 题</div>
-        </header>
-
-        <article className="bg-slate-50 p-4 rounded-xl shadow-inner border">
-          <div className="text-sm text-slate-500 mb-2">知识点：{current.category}</div>
-          <h2 className="font-medium mb-3">{current.q}</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {current.options.map((opt) => {
-              const choice = opt.charAt(0);
-              const selected = answers[current.id] === choice;
-              const isCorrect = current.ans === choice;
-              const show = revealed[current.id];
-              const base = "text-left border p-3 rounded-lg transition";
-              const bgClass = show
-                ? isCorrect
-                  ? "bg-green-50 border-green-300"
-                  : selected
-                  ? "bg-red-50 border-red-300"
-                  : "bg-white border-slate-200"
-                : "bg-white border-slate-200 hover:shadow-sm";
-
-              return (
-                <button
-                  key={opt}
-                  disabled={show}
-                  onClick={() => handleAnswer(current.id, choice)}
-                  className={`${base} ${bgClass}`}
-                >
-                  <div className="font-medium">{opt}</div>
-                </button>
-              );
-            })}
+            <div style={styles.neonTitle}>环节动物测试</div>
+            <div style={styles.subtitle}>蓝紫霓虹 · 顺序答题 · 逐题解析</div>
           </div>
 
-          {revealed[current.id] && (
-            <div className="mt-3 p-3 rounded-md bg-white border">
-              <div className={`text-sm font-semibold ${answers[current.id] === current.ans ? "text-green-700" : "text-red-700"}`}>
-                {answers[current.id] === current.ans ? "回答正确 ✅" : `回答错误 ❌（正确答案：${current.ans}）`}
-              </div>
-              <div className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">解析：{current.exp}</div>
-
-              <div className="mt-4 flex justify-between items-center">
-                <div className="text-xs text-slate-500">
-                  当前得分： {Object.keys(answers).filter((id) => {
-                    const q = questions.find((qq) => qq.id === Number(id));
-                    return q && answers[id] === q.ans;
-                  }).length} / {total}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 12, color: "#c9d4ff" }}>题目 {currentIndex + 1} / {total}</div>
+            <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ fontSize: 13, color: "#e8eeff", fontWeight: 700 }}>{correctCount} 正确</div>
+              <div style={{ width: 140 }}>
+                <div style={styles.progressWrap}>
+                  <div style={styles.progressInner(progressPct)} />
                 </div>
-
-                <button
-                  onClick={next}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                >
-                  {currentIndex + 1 === questions.length ? "查看成绩" : "下一题 →"}
-                </button>
               </div>
             </div>
-          )}
-        </article>
+          </div>
+        </div>
 
-        <footer className="mt-6 text-xs text-slate-500 border-t pt-3">
-          <div className="mb-2">快速提示：你可以在任意时刻答题，答完当前题后点击“下一题”继续。页面刷新会重新随机题序。</div>
-        </footer>
+        <div style={{ ...styles.centerBox }}>
+          <div style={styles.questionCard}>
+            <div style={styles.questionText}>{current.q}</div>
+
+            <div style={styles.optionGrid}>
+              {current.options.map((opt) => {
+                const choice = opt.charAt(0);
+                const selected = answers[current.id] === choice;
+                const isCorrect = current.ans === choice;
+                const show = revealed[current.id];
+
+                // dynamic styles
+                const base = { ...styles.optionBtn };
+                if (!show) {
+                  base.background = "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))";
+                  base.border = "1px solid rgba(255,255,255,0.06)";
+                } else {
+                  if (isCorrect) {
+                    base.background = "linear-gradient(90deg, rgba(120,60,255,0.18), rgba(20,210,255,0.12))";
+                    base.border = "1px solid rgba(120,60,255,0.6)";
+                    base.boxShadow = "0 6px 26px rgba(60,20,140,0.22)";
+                    base.color = "#e8f9ff";
+                  } else if (selected) {
+                    base.background = "linear-gradient(90deg, rgba(255,90,110,0.12), rgba(255,60,90,0.06))";
+                    base.border = "1px solid rgba(255,90,110,0.28)";
+                    base.color = "#ffecec";
+                    base.boxShadow = "0 6px 20px rgba(200,20,40,0.12)";
+                  } else {
+                    base.background = "linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005))";
+                  }
+                }
+
+                return (
+                  <button
+                    key={opt}
+                    disabled={show}
+                    onClick={() => handleAnswer(current.id, choice)}
+                    style={base}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        minWidth: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
+                        color: "#dfe7ff",
+                        fontWeight: 800,
+                        boxShadow: show && isCorrect ? "0 6px 18px rgba(50,180,255,0.12)" : "none"
+                      }}>{choice}</div>
+                      <div style={{ fontSize: 14 }}>{opt.slice(3)}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {revealed[current.id] && (
+              <div style={{ marginTop: 16, padding: 14, borderRadius: 10, background: "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)))", border: "1px solid rgba(255,255,255,0.03)" }}>
+                <div style={{ fontWeight: 700, color: answers[current.id] === current.ans ? "#7fffd4" : "#ffb3b3" }}>
+                  {answers[current.id] === current.ans ? "回答正确 ✅" : `回答错误 ❌（正确：${current.ans}）`}
+                </div>
+                <div style={{ marginTop: 8, color: "#d4ddff", fontSize: 14 }}>{current.exp}</div>
+
+                <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ color: "#aeb5db", fontSize: 13 }}>
+                    当前得分：{correctCount} / {total}
+                  </div>
+                  <div>
+                    <button onClick={next} style={{
+                      padding: "10px 14px",
+                      borderRadius: 10,
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 800,
+                      background: "linear-gradient(90deg,#8a4dff,#00e1ff)",
+                      color: "#0b0720",
+                      boxShadow: "0 10px 30px rgba(80,30,200,0.18)"
+                    }}>
+                      {currentIndex + 1 === questions.length ? "查看成绩" : "下一题 →"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={styles.cardFooter}>
+          <div style={styles.neonSmall}>提示：答完一题后解析会出现，刷新页面可重新随机题序</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={restart} style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.04)",
+              background: "transparent",
+              color: "#c9d4ff",
+              cursor: "pointer",
+              fontWeight: 700
+            }}>重置</button>
+          </div>
+        </div>
       </div>
     </div>
   );
